@@ -21,6 +21,7 @@ When the user asks a question, match it to a skill and act:
 | Protein structure, AlphaFold, PDB, Boltz | `skills/struct-predictor/` | Read SKILL.md, apply methodology |
 | Reproducibility, Nextflow, Singularity, Conda export | `skills/repro-enforcer/` | Read SKILL.md, apply methodology |
 | Sequence QC, FASTQ, alignment, BAM, trimming | `skills/seq-wrangler/` | Read SKILL.md, apply methodology |
+| Bulk RNA-seq, pseudo-bulk, differential expression, DESeq2, PyDESeq2, contrast, volcano plot | `skills/rnaseq-de/` | Run `rnaseq_de.py` |
 
 ## How to Use a Skill
 
@@ -59,6 +60,11 @@ python skills/genome-compare/genome_compare.py --demo --output <report_dir>
 # Bio orchestrator — auto-routes to the right skill
 python skills/bio-orchestrator/orchestrator.py \
   --input <file_or_query> [--skill <name>] [--output <dir>] [--list-skills]
+
+# RNA-seq differential expression (bulk + pseudo-bulk)
+python skills/rnaseq-de/rnaseq_de.py \
+  --counts <counts_csv_or_tsv> --metadata <metadata_csv_or_tsv> \
+  --formula "~ batch + condition" --contrast "condition,treated,control" --output <report_dir>
 ```
 
 ## Demo Data
@@ -97,6 +103,9 @@ python skills/nutrigx_advisor/nutrigx_advisor.py \
 
 # List all available skills
 python skills/bio-orchestrator/orchestrator.py --list-skills
+
+# RNA-seq DE demo
+python skills/rnaseq-de/rnaseq_de.py --demo --output /tmp/rnaseq_de_demo
 ```
 
 ## Contributing — New Skill Workflow

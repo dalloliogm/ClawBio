@@ -81,6 +81,20 @@ SKILLS = {
         "allowed_extra_flags": {"--no-figures", "--aims-panel", "--reference"},
         "summary_default": True,  # no --output → summary text on stdout
     },
+    "rnaseq": {
+        "script": SKILLS_DIR / "rnaseq-de" / "rnaseq_de.py",
+        "demo_args": ["--demo"],
+        "description": "Bulk/pseudo-bulk RNA-seq differential expression (QC + PCA + DE)",
+        "allowed_extra_flags": {
+            "--counts",
+            "--metadata",
+            "--formula",
+            "--contrast",
+            "--backend",
+            "--min-count",
+            "--min-samples",
+        },
+    },
 }
 
 # --------------------------------------------------------------------------- #

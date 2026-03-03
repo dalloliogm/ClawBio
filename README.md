@@ -136,6 +136,7 @@ report/
 | [Ancestry PCA](skills/ancestry-pca/) | **MVP** | PCA vs SGDP (345 samples, 164 populations) |
 | [Semantic Similarity](skills/semantic-sim/) | **MVP** | Isolation Index from 13.1M PubMed abstracts |
 | [Genome Comparator](skills/genome-compare/) | **MVP** | IBS vs George Church (PGP-1) + ancestry estimation |
+| [RNA-seq DE](skills/rnaseq-de/) | **MVP** | Bulk/pseudo-bulk differential expression with QC + PCA + contrasts |
 | [VCF Annotator](skills/vcf-annotator/) | Planned | Variant annotation with VEP, ClinVar, gnomAD + ancestry context |
 | [Lit Synthesizer](skills/lit-synthesizer/) | Planned | PubMed/bioRxiv search with LLM summarisation and citation graphs |
 | [scRNA Orchestrator](skills/scrna-orchestrator/) | Planned | Scanpy automation: QC, clustering, DE analysis, visualisation |
@@ -219,12 +220,14 @@ python clawbio.py run equity --demo             # Equity scoring (55s)
 python clawbio.py run nutrigx --demo            # Nutrigenomics (60s)
 python clawbio.py run metagenomics --demo       # Metagenomics (3s)
 python clawbio.py run compare --demo            # Manuel Corpas vs George Church (10s)
+python clawbio.py run rnaseq --demo             # RNA-seq DE demo (bulk/pseudo-bulk)
 ```
 
 ### Run with your own data
 
 ```bash
 python clawbio.py run pharmgx --input my_23andme.txt --output results/
+python clawbio.py run rnaseq --input counts.csv,metadata.csv --output results_rnaseq/
 ```
 
 ### Run tests

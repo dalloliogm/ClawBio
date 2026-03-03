@@ -40,3 +40,6 @@ jobs:
 
       - name: Run Genome Comparator tests
         run: python -m pytest skills/genome-compare/tests/test_genome_compare.py -v
+
+      - name: Run RNA-seq DE tests
+        run: python -m pytest skills/rnaseq-de/tests/test_rnaseq_de.py -v
