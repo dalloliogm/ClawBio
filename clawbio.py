@@ -81,6 +81,7 @@ SKILLS = {
         "allowed_extra_flags": {"--no-figures", "--aims-panel", "--reference"},
         "summary_default": True,  # no --output → summary text on stdout
     },
+<<<<<<< HEAD
     "rnaseq": {
         "script": SKILLS_DIR / "rnaseq-de" / "rnaseq_de.py",
         "demo_args": ["--demo"],
@@ -94,7 +95,51 @@ SKILLS = {
             "--min-count",
             "--min-samples",
         },
-    },
+=======
+    "drugphoto": {
+        "script": SKILLS_DIR / "pharmgx-reporter" / "pharmgx_reporter.py",
+        "demo_args": [
+            "--input",
+            str(SKILLS_DIR / "genome-compare" / "data" / "manuel_corpas_23andme.txt.gz"),
+        ],
+        "description": "Drug photo analysis (single-drug PGx lookup from photo identification)",
+        "rnaseq": {
+            "script": SKILLS_DIR / "rnaseq-de" / "rnaseq_de.py",
+            "demo_args": ["--demo"],
+            "description": "Bulk/pseudo-bulk RNA-seq differential expression (QC + PCA + DE)",
+            "allowed_extra_flags": {
+                "--counts",
+                "--metadata",
+                "--formula",
+                "--contrast",
+                "--backend",
+                "--min-count",
+                "--min-samples",
+            },
+        },
+        "drugphoto": {
+            "script": SKILLS_DIR / "pharmgx-reporter" / "pharmgx_reporter.py",
+            "demo_args": [
+                "--input",
+                str(SKILLS_DIR / "genome-compare" / "data" / "manuel_corpas_23andme.txt.gz"),
+            ],
+            "description": "Drug photo analysis (single-drug PGx lookup from photo identification)",
+            "allowed_extra_flags": {"--drug", "--dose"},
+            "summary_default": True,  # stdout card, no file output
+        },
+        "prs": {
+            "script": SKILLS_DIR / "gwas-prs" / "gwas_prs.py",
+            "demo_args": ["--demo"],
+            "description": "GWAS Polygenic Risk Score calculator (PGS Catalog, 3000+ scores)",
+            "allowed_extra_flags": {"--trait", "--pgs-id", "--min-overlap", "--max-variants", "--build"},
+        },
+        "gwas": {
+            "script": SKILLS_DIR / "gwas-lookup" / "gwas_lookup.py",
+            "demo_args": ["--demo"],
+            "description": "GWAS Lookup — federated variant query across 9 genomic databases",
+            "allowed_extra_flags": {"--rsid", "--skip", "--no-figures", "--no-cache", "--max-hits"},
+            "no_input_required": True,  # uses --rsid instead of --input
+>>>>>>> origin/main
 }
 
 # --------------------------------------------------------------------------- #
@@ -184,7 +229,7 @@ def run_skill(
         cmd.extend(skill_info["demo_args"])
     elif input_path:
         cmd.extend(["--input", str(input_path)])
-    else:
+    elif not skill_info.get("no_input_required"):
         return {
             "skill": skill_name,
             "success": False,
@@ -298,17 +343,38 @@ def main():
     run_parser.add_argument(
         "--timeout", type=int, default=300, help="Timeout in seconds (default: 300)"
     )
+    run_parser.add_argument("--drug", default=None, help="Drug name for single-drug lookup (drugphoto skill)")
+    run_parser.add_argument("--dose", default=None, help="Visible dose from packaging (e.g. '50mg')")
+    run_parser.add_argument("--trait", default=None, help="Trait search term for PRS skill")
+    run_parser.add_argument("--pgs-id", default=None, help="PGS Catalog score ID for PRS skill")
+    run_parser.add_argument("--rsid", default=None, help="rsID for GWAS lookup skill (e.g. rs3798220)")
+    run_parser.add_argument("--skip", default=None, help="Comma-separated API names to skip (gwas-lookup skill)")
 
     args = parser.parse_args()
 
     if args.command == "list":
         list_skills()
     elif args.command == "run":
+        # Build extra_args from --drug / --dose
+        extra = []
+        if getattr(args, "drug", None):
+            extra.extend(["--drug", args.drug])
+        if getattr(args, "dose", None):
+            extra.extend(["--dose", args.dose])
+        if getattr(args, "trait", None):
+            extra.extend(["--trait", args.trait])
+        if getattr(args, "pgs_id", None):
+            extra.extend(["--pgs-id", args.pgs_id])
+        if getattr(args, "rsid", None):
+            extra.extend(["--rsid", args.rsid])
+        if getattr(args, "skip", None):
+            extra.extend(["--skip", args.skip])
         result = run_skill(
             skill_name=args.skill,
             input_path=args.input_path,
             output_dir=args.output_dir,
             demo=args.demo,
+            extra_args=extra or None,
             timeout=args.timeout,
         )
         # Summary mode: skill printed text to stdout — relay it directly
@@ -325,6 +391,19 @@ def main():
             print(f"  Output:   {result['output_dir']}")
         if result["files"]:
             print(f"  Files:    {', '.join(result['files'])}")
+        # Show a preview of the report if one was generated
+        if result["success"] and result["output_dir"]:
+            report = Path(result["output_dir"]) / "report.md"
+            if report.exists():
+                text = report.read_text()
+                lines = text.splitlines()
+                preview = "\n".join(lines[:40])
+                remaining = max(0, len(lines) - 40)
+                print(f"\n{'─' * 60}")
+                print(preview)
+                if remaining:
+                    print(f"\n  ... ({remaining} more lines in {report})")
+                print(f"{'─' * 60}")
         if not result["success"] and result["stderr"]:
             print(f"\n  Error:\n{result['stderr'][-800:]}")
         sys.exit(0 if result["success"] else 1)
