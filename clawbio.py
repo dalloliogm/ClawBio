@@ -81,7 +81,6 @@ SKILLS = {
         "allowed_extra_flags": {"--no-figures", "--aims-panel", "--reference"},
         "summary_default": True,  # no --output → summary text on stdout
     },
-<<<<<<< HEAD
     "rnaseq": {
         "script": SKILLS_DIR / "rnaseq-de" / "rnaseq_de.py",
         "demo_args": ["--demo"],
@@ -95,7 +94,7 @@ SKILLS = {
             "--min-count",
             "--min-samples",
         },
-=======
+    },
     "drugphoto": {
         "script": SKILLS_DIR / "pharmgx-reporter" / "pharmgx_reporter.py",
         "demo_args": [
@@ -103,43 +102,39 @@ SKILLS = {
             str(SKILLS_DIR / "genome-compare" / "data" / "manuel_corpas_23andme.txt.gz"),
         ],
         "description": "Drug photo analysis (single-drug PGx lookup from photo identification)",
-        "rnaseq": {
-            "script": SKILLS_DIR / "rnaseq-de" / "rnaseq_de.py",
-            "demo_args": ["--demo"],
-            "description": "Bulk/pseudo-bulk RNA-seq differential expression (QC + PCA + DE)",
-            "allowed_extra_flags": {
-                "--counts",
-                "--metadata",
-                "--formula",
-                "--contrast",
-                "--backend",
-                "--min-count",
-                "--min-samples",
-            },
+        "allowed_extra_flags": {"--drug", "--dose"},
+        "summary_default": True,  # stdout card, no file output
+    },
+    "prs": {
+        "script": SKILLS_DIR / "gwas-prs" / "gwas_prs.py",
+        "demo_args": ["--demo"],
+        "description": "GWAS Polygenic Risk Score calculator (PGS Catalog, 3000+ scores)",
+        "allowed_extra_flags": {"--trait", "--pgs-id", "--min-overlap", "--max-variants", "--build"},
+    },
+    "gwas": {
+        "script": SKILLS_DIR / "gwas-lookup" / "gwas_lookup.py",
+        "demo_args": ["--demo"],
+        "description": "GWAS Lookup — federated variant query across 9 genomic databases",
+        "allowed_extra_flags": {"--rsid", "--skip", "--no-figures", "--no-cache", "--max-hits"},
+        "no_input_required": True,  # uses --rsid instead of --input
+    },
+    "methylation": {
+        "script": SKILLS_DIR / "methylation-clock" / "methylation_clock.py",
+        "demo_args": [
+            "--input",
+            str(CLAWBIO_DIR / "pyaging_data" / "GSE139307_small.pkl"),
+        ],
+        "description": "Epigenetic age from methylation clocks (PyAging)",
+        "no_input_required": True,
+        "allowed_extra_flags": {
+            "--geo-id",
+            "--clocks",
+            "--metadata-cols",
+            "--imputer-strategy",
+            "--skip-epicv2-aggregation",
+            "--verbose",
         },
-        "drugphoto": {
-            "script": SKILLS_DIR / "pharmgx-reporter" / "pharmgx_reporter.py",
-            "demo_args": [
-                "--input",
-                str(SKILLS_DIR / "genome-compare" / "data" / "manuel_corpas_23andme.txt.gz"),
-            ],
-            "description": "Drug photo analysis (single-drug PGx lookup from photo identification)",
-            "allowed_extra_flags": {"--drug", "--dose"},
-            "summary_default": True,  # stdout card, no file output
-        },
-        "prs": {
-            "script": SKILLS_DIR / "gwas-prs" / "gwas_prs.py",
-            "demo_args": ["--demo"],
-            "description": "GWAS Polygenic Risk Score calculator (PGS Catalog, 3000+ scores)",
-            "allowed_extra_flags": {"--trait", "--pgs-id", "--min-overlap", "--max-variants", "--build"},
-        },
-        "gwas": {
-            "script": SKILLS_DIR / "gwas-lookup" / "gwas_lookup.py",
-            "demo_args": ["--demo"],
-            "description": "GWAS Lookup — federated variant query across 9 genomic databases",
-            "allowed_extra_flags": {"--rsid", "--skip", "--no-figures", "--no-cache", "--max-hits"},
-            "no_input_required": True,  # uses --rsid instead of --input
->>>>>>> origin/main
+    },
 }
 
 # --------------------------------------------------------------------------- #
@@ -349,6 +344,12 @@ def main():
     run_parser.add_argument("--pgs-id", default=None, help="PGS Catalog score ID for PRS skill")
     run_parser.add_argument("--rsid", default=None, help="rsID for GWAS lookup skill (e.g. rs3798220)")
     run_parser.add_argument("--skip", default=None, help="Comma-separated API names to skip (gwas-lookup skill)")
+    run_parser.add_argument("--geo-id", default=None, help="GEO accession for methylation clock skill")
+    run_parser.add_argument("--clocks", default=None, help="Comma-separated clock names for methylation skill")
+    run_parser.add_argument("--metadata-cols", default=None, help="Comma-separated metadata columns for methylation skill")
+    run_parser.add_argument("--imputer-strategy", default=None, help="Imputer strategy for methylation skill")
+    run_parser.add_argument("--skip-epicv2-aggregation", action="store_true", help="Skip EPICv2 probe aggregation")
+    run_parser.add_argument("--verbose", action="store_true", help="Verbose output for skill backends")
 
     args = parser.parse_args()
 
@@ -369,6 +370,18 @@ def main():
             extra.extend(["--rsid", args.rsid])
         if getattr(args, "skip", None):
             extra.extend(["--skip", args.skip])
+        if getattr(args, "geo_id", None):
+            extra.extend(["--geo-id", args.geo_id])
+        if getattr(args, "clocks", None):
+            extra.extend(["--clocks", args.clocks])
+        if getattr(args, "metadata_cols", None):
+            extra.extend(["--metadata-cols", args.metadata_cols])
+        if getattr(args, "imputer_strategy", None):
+            extra.extend(["--imputer-strategy", args.imputer_strategy])
+        if getattr(args, "skip_epicv2_aggregation", False):
+            extra.append("--skip-epicv2-aggregation")
+        if getattr(args, "verbose", False):
+            extra.append("--verbose")
         result = run_skill(
             skill_name=args.skill,
             input_path=args.input_path,

@@ -35,6 +35,8 @@ EXTENSION_MAP: dict[str, str] = {
     ".cif": "struct-predictor",
     ".h5ad": "scrna-orchestrator",
     ".rds": "scrna-orchestrator",
+    ".pkl": "methylation-clock",
+    ".pickle": "methylation-clock",
     ".csv": "equity-scorer",
     ".tsv": "equity-scorer",
 }
@@ -78,27 +80,15 @@ KEYWORD_MAP: dict[str, str] = {
     "dna in common": "genome-compare",
     "george church": "genome-compare",
     "genome comparison": "genome-compare",
-        "differential expression": "rnaseq-de",
-        "deseq2": "rnaseq-de",
-        "pydeseq2": "rnaseq-de",
-        "bulk rna": "rnaseq-de",
-        "rna-seq": "rnaseq-de",
-        "volcano plot": "rnaseq-de",
-        "ma plot": "rnaseq-de",
-        "contrast": "rnaseq-de",
-        "count matrix": "rnaseq-de",
-        "prs": "gwas-prs",
-        "polygenic": "gwas-prs",
-        "risk score": "gwas-prs",
-        "polygenic risk": "gwas-prs",
-        "gwas lookup": "gwas-lookup",
-        "variant lookup": "gwas-lookup",
-        "rs lookup": "gwas-lookup",
-        "rsid": "gwas-lookup",
-        "look up rs": "gwas-lookup",
-        "lookup rs": "gwas-lookup",
-        "phewas": "gwas-lookup",
-        "gwas": "gwas-lookup",
+    "differential expression": "rnaseq-de",
+    "deseq2": "rnaseq-de",
+    "pydeseq2": "rnaseq-de",
+    "bulk rna": "rnaseq-de",
+    "rna-seq": "rnaseq-de",
+    "volcano plot": "rnaseq-de",
+    "ma plot": "rnaseq-de",
+    "contrast": "rnaseq-de",
+    "count matrix": "rnaseq-de",
     "prs": "gwas-prs",
     "polygenic": "gwas-prs",
     "risk score": "gwas-prs",
@@ -111,7 +101,17 @@ KEYWORD_MAP: dict[str, str] = {
     "lookup rs": "gwas-lookup",
     "phewas": "gwas-lookup",
     "gwas": "gwas-lookup",
->>>>>>> origin/main
+    "epigenetic age": "methylation-clock",
+    "methylation": "methylation-clock",
+    "methylation clock": "methylation-clock",
+    "dna methylation": "methylation-clock",
+    "pyaging": "methylation-clock",
+    "horvath": "methylation-clock",
+    "altumage": "methylation-clock",
+    "grimage": "methylation-clock",
+    "dunedinpace": "methylation-clock",
+    "geo accession": "methylation-clock",
+    "gse": "methylation-clock",
 }
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent
@@ -170,6 +170,12 @@ def detect_skill_from_tabular_header(filepath: Path) -> str | None:
                 continue
         if numeric_count >= 3:
             return "rnaseq-de"
+
+    methylation_markers = {"gender", "sex", "female", "tissue_type", "dataset"}
+    if header_set & methylation_markers:
+        cg_like = [h for h in headers if h.startswith("cg")]
+        if len(cg_like) >= 10:
+            return "methylation-clock"
 
     return None
 
